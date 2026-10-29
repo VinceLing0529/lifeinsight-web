@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 自定义样式 */
+@layer base {
+
+    html,
+    body {
+        font-family: 'Microsoft YaHei', 'SimSun', sans-serif;
+        @apply bg-gray-50 text-gray-900;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+}
+
+@layer components {
+
+    /* 卡片样式 */
+    .card {
+        @apply bg-white rounded-lg shadow-md p-6 border border-gray-200;
+    }
+
+    .card-hover {
+        @apply transition-all duration-200 hover:shadow-lg hover:scale-105;
+    }
+
+    /* 按钮样式 */
+    .btn-primary {
+        @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    }
+
+    .btn-secondary {
+        @apply bg-secondary-500 hover:bg-secondary-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    }
+
+    .btn-outline {
+        @apply border-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white font-medium py-2 px-4 rounded-lg transition-all duration-200;
+    }
+
+    /* 表单样式 */
+    .form-input {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    }
+
+    .form-label {
+        @apply block text-sm font-medium text-gray-700 mb-2;
+    }
+
+    .form-error {
+        @apply text-red-500 text-sm mt-1;
+    }
+
+    /* 渐变背景 */
+    .gradient-bg {
+        @apply bg-gradient-to-br from-primary-50 to-secondary-50;
+    }
+
+    /* 命盘卡片 */
+    .chart-card {
+        @apply bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300;
+    }
+
+    /* 加载动画 */
+    .loading-spinner {
+        @apply animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500;
+    }
+
+    /* 思维导图容器 */
+    .mindmap-container {
+        @apply bg-white rounded-lg shadow-md p-4 border border-gray-200 overflow-auto;
+    }
+}
+
+@layer utilities {
+
+    /* 自定义工具类 */
+    .text-gradient {
+        @apply bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent;
+    }
+
+    .shadow-soft {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+
+    .shadow-glow {
+        box-shadow: 0 0 20px rgba(238, 90, 36, 0.3);
+    }
+
+    /* 滚动相关样式 */
+    .scroll-smooth {
+        scroll-behavior: smooth;
+    }
+
+    .overflow-y-auto {
+        overflow-y: auto;
+    }
+
+    .overflow-x-hidden {
+        overflow-x: hidden;
+    }
+}
+
+/* Mermaid图表样式优化 */
+.mermaid {
+    @apply bg-white rounded-lg p-4;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .card {
+        @apply p-4;
+    }
+
+    .chart-card {
+        @apply p-4;
+    }
+}

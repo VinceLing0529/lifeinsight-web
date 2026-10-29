@@ -1,0 +1,70 @@
+# lifeinsight-web .gitignore
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 虚拟环境（本仓曾误提交整个 venv/）
+venv/
+.venv/
+env/
+ENV/
+
+# 打包/测试缓存
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.tox/
+htmlcov/
+.coverage
+
+# ---------- Node / 前端 ----------
+node_modules/
+*/node_modules/
+.cache/
+*.tsbuildinfo
+
+# 构建产物（本仓曾误提交 build/）
+build/
+*/build/
+dist/
+*/dist/
+
+# ---------- 运行时生成物 ----------
+# 后端运行生成的报告输出（含用户出生信息，严禁入仓）
+backend/data/reports/
+# 一次性测试输出
+qa_result.json
+# 日志
+*.log
+*.log.*
+logs/
+
+# ---------- 二进制安装包 ----------
+*.msi
+*.exe
+*.dmg
+
+# ---------- 密钥与本地配置 ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---------- 编辑器 / 系统 ----------
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---------- 项目杂项 ----------
+.cursor-tmp/
+tmp/
+temp/
+*.bak
+*.old

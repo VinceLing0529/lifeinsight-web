@@ -1,0 +1,324 @@
+{
+    "prompt_generation_process": {
+        "description": "AI报告生成过程中的动态prompt结构",
+        "flow": [
+            "用户点击'立即获取完整报告'",
+            "前端调用setupContext API",
+            "后端create_context_prompt生成上下文prompt",
+            "调用batch-generate API",
+            "后端使用四大模块的prompt模板生成分析"
+        ]
+    },
+    "user_data_structure": {
+        "description": "传入prompt的用户命理数据结构",
+        "input": {
+            "birth_date": "1995-06-15",
+            "birth_time": "14:30",
+            "timezone": "+8",
+            "longitude": 121.5,
+            "latitude": 31.2,
+            "gender": 1,
+            "gender_str": "男",
+            "location_name": "上海",
+            "true_solar_time": {
+                "year": 1995,
+                "month": 6,
+                "day": 15,
+                "hour": 14,
+                "minute": 28
+            }
+        },
+        "bazi": {
+            "year_pillar": "乙亥",
+            "month_pillar": "壬午",
+            "day_pillar": "丁巳",
+            "hour_pillar": "辛亥",
+            "day_master": "丁",
+            "body_strength": "强",
+            "five_elements_count": {
+                "木": 2,
+                "火": 2,
+                "土": 0,
+                "金": 1,
+                "水": 3
+            },
+            "ten_gods": {
+                "年干": "正印",
+                "月干": "劫财",
+                "日干": "比肩",
+                "时干": "正财"
+            },
+            "nayin": {
+                "年柱": "山头火",
+                "月柱": "杨柳木",
+                "日柱": "沙中土",
+                "时柱": "钗训金"
+            },
+            "enhanced_analysis": {
+                "四柱详析": [
+                    {
+                        "柱序": "年柱",
+                        "天干": "乙",
+                        "地支": "亥",
+                        "干支": "乙亥",
+                        "主星": "正印",
+                        "藏干": [
+                            "壬",
+                            "甲"
+                        ],
+                        "纳音": "山头火",
+                        "星运（十二长生）": "病",
+                        "藏干十神": [
+                            {
+                                "藏干": "壬",
+                                "十神": "劫财"
+                            },
+                            {
+                                "藏干": "甲",
+                                "十神": "偏印"
+                            }
+                        ]
+                    }
+                ],
+                "十神统计": {
+                    "正印": 1,
+                    "劫财": 1,
+                    "比肩": 1,
+                    "正财": 1
+                },
+                "五行分布": {
+                    "木": 2,
+                    "火": 2,
+                    "土": 0,
+                    "金": 1,
+                    "水": 3
+                }
+            }
+        },
+        "ziwei": {
+            "basic_info": {
+                "lunar_date": "1995年五月十八日",
+                "chinese_date": "乙亥年壬午月丁巳日",
+                "soul": "天机",
+                "body": "天同",
+                "five_elements_class": "火六局"
+            },
+            "chart": {
+                "palaces": {
+                    "命宫": {
+                        "heavenly_stem": "丁",
+                        "earthly_branch": "巳",
+                        "major_stars": [
+                            {
+                                "name": "紫微"
+                            }
+                        ],
+                        "minor_stars": [
+                            "天魁",
+                            "天钺"
+                        ],
+                        "is_body_palace": false
+                    }
+                }
+            },
+            "si_hua": {
+                "禄": "天机",
+                "权": "天梁",
+                "科": "天同",
+                "忌": "天相"
+            }
+        },
+        "vedic": {
+            "chart_type": "natal",
+            "ayanamsa": {
+                "type": "Lahiri",
+                "value": 23.85
+            },
+            "ascendant": {
+                "sign": "天蝎",
+                "lon": 240.5,
+                "house": 1
+            },
+            "planets": {
+                "Sun": {
+                    "sign": "双子",
+                    "house": 9,
+                    "lon": 85.2
+                },
+                "Moon": {
+                    "sign": "巨蟹",
+                    "house": 10,
+                    "lon": 120.8
+                }
+            },
+            "axis_points": {
+                "MC": {
+                    "sign": "狮子",
+                    "house": 10,
+                    "lon": 150.3
+                }
+            }
+        },
+        "timezone_info": {
+            "timezone": "Asia/Shanghai",
+            "utc_offset": "+08:00"
+        }
+    },
+    "context_prompt_template": {
+        "description": "create_context_prompt函数生成的上下文建立prompt",
+        "template": "你是一位资深的命理分析师，精通八字、紫微斗数和印度星盘三大命理系统。现在请建立对以下用户的完整命盘上下文理解：\n\n【用户基本信息】\n性别：{gender_str}\n出生时间：{birth_date} {birth_time}\n真太阳时：{true_solar_time_json}\n出生地点：{location_name}\n经纬度：{longitude}°E, {latitude}°N\n时区：{timezone} (UTC{utc_offset})\n\n【八字命理信息】\n四柱：{year_pillar} {month_pillar} {day_pillar} {hour_pillar}\n日主：{day_master}火\n身强身弱：{body_strength}\n五行统计：{five_elements_json}\n十神配置：{ten_gods_json}\n{bazi_detail}\n\n【紫微斗数信息】\n{ziwei_detail}\n\n【印度星盘信息】\n{vedic_detail}\n\n请基于以上三大命理系统的完整数据，深度理解这位用户的命盘特征、性格特质、天赋潜力、人生走向等各个方面。这些数据将作为后续分析的基础，请确保充分吸收和理解所有信息。\n\n请回复\"上下文已建立，我已充分理解用户的完整命盘信息\"。"
+    },
+    "four_analysis_modules": {
+        "comprehensive_analysis": {
+            "title": "优劣混合分析",
+            "description": "AI深度分析您的天赋、内驱力、盲区和成长方向",
+            "ai_generated_fields": [
+                "summary.overview - 整体命理特征概述（300-400字）",
+                "talents.overview - 天赋优势总体分析（100-150字）",
+                "tensions.overview - 内心张力特征总体分析（100-150字）",
+                "blindspots.overview - 潜在盲区总体分析（100-150字）",
+                "guidance.overview - 成长路径总体分析（100-150字）",
+                "所有suggestions中的具体内容（个性化调整）"
+            ],
+            "fixed_fields": [
+                "summary.title - 命理综述",
+                "talents.title - 天赋优势",
+                "tensions.title - 内心张力",
+                "blindspots.title - 命盘盲区",
+                "guidance.title - 成长引导",
+                "所有suggestions中的标题部分"
+            ]
+        },
+        "mindmap_presentation": {
+            "title": "思维导图呈现",
+            "description": "直观展示您的性格特质和人格结构",
+            "ai_generated_fields": [
+                "positive_traits.overview - 正向性格特征总体分析（100-150字）",
+                "negative_tendencies.overview - 负向性格倾向总体分析（100-150字）",
+                "conflicting_aspects.overview - 潜在冲突性格总体分析（100-150字）",
+                "strength_areas.overview - 易发展领域总体分析（100-150字）",
+                "weakness_areas.overview - 易出问题领域总体分析（100-150字）",
+                "positive_traits.details[].title - 6个两字标题",
+                "positive_traits.details[].description - 6个一句话总结",
+                "negative_tendencies.details[].title - 6个两字标题",
+                "negative_tendencies.details[].description - 6个一句话总结",
+                "conflicting_aspects.details[].description - 4个分析描述",
+                "strength_areas.details[].description - 4个分析描述",
+                "weakness_areas.details[].description - 4个分析描述"
+            ],
+            "fixed_fields": [
+                "conflicting_aspects.details[].title - 理性vs感性、行动vs思考、独立vs依赖、完美vs效率",
+                "strength_areas.details[].title - 适合行业、人际风格、表达方式、工作特长",
+                "weakness_areas.details[].title - 感情破裂点、人际失衡点、健康压力点、资源耗损点"
+            ]
+        },
+        "fortune_prediction": {
+            "title": "运势预测报告",
+            "description": "未来12个月的运势变化趋势分析",
+            "ai_generated_fields": [
+                "monthly_predictions[].career_score - 12个月的事业评分（1-10）",
+                "monthly_predictions[].wealth_score - 12个月的财富评分（1-10）",
+                "monthly_predictions[].relationship_score - 12个月的感情评分（1-10）",
+                "monthly_predictions[].health_score - 12个月的健康评分（1-10）"
+            ],
+            "fixed_fields": [
+                "monthly_predictions[].month - 动态生成的月份（如2025年1月）",
+                "score_summary - 由前端计算生成"
+            ],
+            "dynamic_time_info": {
+                "description": "动态生成未来12个月的时间信息",
+                "current_month": "2025年1月",
+                "prediction_range": "2025年2月至2026年1月"
+            }
+        },
+        "personalized_advice": {
+            "title": "个性化建议",
+            "description": "基于命理分析的人生指导和建议",
+            "ai_generated_fields": [
+                "life_guidance.wealth.questions[].answer - 6个财富类问题答案",
+                "life_guidance.career.questions[].answer - 6个事业类问题答案",
+                "life_guidance.love.questions[].answer - 6个感情类问题答案",
+                "life_guidance.personality.questions[].answer - 6个性格类问题答案",
+                "life_guidance.fortune.questions[].answer - 6个运势类问题答案"
+            ],
+            "fixed_fields": [
+                "life_guidance.wealth.title - 财富类",
+                "life_guidance.wealth.icon - 💰",
+                "life_guidance.wealth.gradient - from-green-500 to-emerald-500",
+                "life_guidance.career.title - 事业类",
+                "life_guidance.career.icon - 💼",
+                "life_guidance.career.gradient - from-blue-500 to-cyan-500",
+                "life_guidance.love.title - 感情类",
+                "life_guidance.love.icon - ❤️",
+                "life_guidance.love.gradient - from-pink-500 to-rose-500",
+                "life_guidance.personality.title - 性格与命格",
+                "life_guidance.personality.icon - 🧠",
+                "life_guidance.personality.gradient - from-purple-500 to-indigo-500",
+                "life_guidance.fortune.title - 运势转折",
+                "life_guidance.fortune.icon - 🌟",
+                "life_guidance.fortune.gradient - from-yellow-500 to-orange-500",
+                "所有questions[].question - 30个固定问题"
+            ]
+        }
+    },
+    "final_report_template": {
+        "description": "最终报告总结的prompt模板",
+        "template": "你是一位精通中国传统命理学和印度占星学的大师。\n\n请基于用户命盘信息和以下四个模块的分析结果，生成一个完整的命理分析报告总结：\n\n优劣混合分析：{comprehensive_analysis}\n思维导图呈现：{mindmap_presentation}\n运势预测报告：{fortune_prediction}\n个性化建议：{personalized_advice}\n\n请综合四个模块的分析，生成一个简洁的报告总结，包含：\n1. 核心命理特征概括\n2. 关键发现和洞察\n3. 重要建议和指导\n\n请严格以JSON格式返回：\n{\n    \"report_summary\": \"综合报告总结内容（200-300字）\"\n}\n\n请确保返回的是纯JSON格式，不要包含任何其他文字。"
+    },
+    "api_endpoints": {
+        "setup_context": {
+            "url": "/ai/analysis/setup-context",
+            "method": "POST",
+            "description": "第一阶段：建立用户命盘上下文",
+            "request": {
+                "user_data": "完整的用户命理数据",
+                "order_id": "生成的订单号"
+            },
+            "response": {
+                "success": true,
+                "message": "命盘上下文建立成功",
+                "order_id": "订单号"
+            }
+        },
+        "batch_generate": {
+            "url": "/ai/analysis/batch-generate",
+            "method": "POST",
+            "description": "第二阶段：批量生成所有维度分析",
+            "request": {
+                "order_id": "订单号"
+            },
+            "response": {
+                "success": true,
+                "order_id": "订单号",
+                "progress": 100,
+                "data": {
+                    "comprehensive_analysis": "优劣混合分析结果",
+                    "mindmap_presentation": "思维导图呈现结果",
+                    "fortune_prediction": "运势预测报告结果",
+                    "personalized_advice": "个性化建议结果",
+                    "final_summary": "最终报告总结"
+                }
+            }
+        }
+    },
+    "data_flow": {
+        "frontend_to_backend": {
+            "1_setup_context": "用户点击'立即获取完整报告' → 调用setupContext API → 传入完整user_data",
+            "2_batch_generate": "调用batch-generate API → 使用已建立的上下文生成四大模块分析",
+            "3_save_report": "保存完整分析结果到data/reports/目录",
+            "4_return_data": "返回分析结果给前端显示"
+        },
+        "prompt_generation": {
+            "context_prompt": "create_context_prompt函数根据user_data生成包含所有命理信息的上下文prompt",
+            "module_prompts": "四大模块使用各自的prompt_template，不包含用户数据（依赖上下文）",
+            "final_prompt": "FINAL_REPORT_TEMPLATE整合四个模块的结果生成最终总结"
+        }
+    },
+    "key_features": {
+        "context_isolation": "用户命理数据只在context_prompt中传入，四大模块prompt不包含用户数据",
+        "dynamic_time": "运势预测模块动态生成未来12个月的时间信息",
+        "fixed_structure": "所有模块都有固定的JSON结构，确保前端UI一致性",
+        "ai_generation": "AI只生成内容字段，标题、图标、问题等UI元素都是固定的",
+        "order_management": "每个报告都有唯一的订单号，支持历史查询功能"
+    }
+}
