@@ -6,6 +6,8 @@ pydantic-settings>=2.1.0
 sxtwl==2.0.7
 py-iztro==0.1.5
 flatlib==0.2.3
+# flatlib 锁定 pyswisseph 2.08 在 Python 3.12 下 ABI 不兼容，强制升级
+pyswisseph>=2.10
 timezonefinder==6.4.1
 pytz==2023.3
 python-dateutil==2.8.2
