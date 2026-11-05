@@ -87,6 +87,10 @@ REACT_APP_API_URL= npm run build
 # ---- Caddy: static frontend + /api reverse proxy, SPA fallback ----
 cat > /etc/caddy/Caddyfile <<'CADDY'
 aimingpan.com, www.aimingpan.com {
+	log {
+		output file /var/log/caddy/access.log
+		format json
+	}
 	handle /api/* {
 		reverse_proxy 127.0.0.1:8000
 	}
