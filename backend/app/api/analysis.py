@@ -529,6 +529,20 @@ def _perform_local_analysis(chart_data: Dict[str, Any], analysis_type: str) -> D
     star_positions = (ziwei.get("chart") or {}).get("star_positions") or {}
     if not isinstance(star_positions, dict):
         star_positions = {}
+    # 全星落宫表：star_positions 只含 14 主星，生年四化落在辅星/杂曜时（如文昌化忌、
+    # 文曲化科）查不到落宫，只能走兜底文案；这里从 palaces 全星表（主星+辅星+杂曜）
+    # 补齐。用 setdefault 让主星仍以 star_positions 为准，主星落宫行为与旧版一致。
+    all_star_positions = dict(star_positions)
+    _palaces_all = (ziwei.get("chart") or {}).get("palaces") or {}
+    if isinstance(_palaces_all, dict):
+        for _pname, _pinfo in _palaces_all.items():
+            if not isinstance(_pinfo, dict):
+                continue
+            for _skey in ("major_stars", "minor_stars", "adjective_stars"):
+                for _st in _pinfo.get(_skey) or []:
+                    _sname = _st.get("name") if isinstance(_st, dict) else _st
+                    if isinstance(_sname, str) and _sname:
+                        all_star_positions.setdefault(_sname, _pname)
     life_stars = _palace_stars(star_positions, "命宫")
     asc_sign = (vedic.get("ascendant") or {}).get("sign", "")
     # 紫微进阶数据：生年四化（星名）+ 命主/身主；四化落宫 = 该星所在宫位
@@ -543,7 +557,7 @@ def _perform_local_analysis(chart_data: Dict[str, Any], analysis_type: str) -> D
         star = four_trans.get(ttype, "")
         if not star:
             return ""
-        palace = star_positions.get(star, "")
+        palace = all_star_positions.get(star, "")
         if not palace:
             return f"{star}化{ttype}（落宫未提供）"
         return f"{star}化{ttype}入{palace}（{_PALACE_DOMAIN.get(palace, palace)}）：{_TRANS_MEANING.get(ttype, '')}"
@@ -552,7 +566,7 @@ def _perform_local_analysis(chart_data: Dict[str, Any], analysis_type: str) -> D
         """落在指定宫位的四化（返回如 ['贪狼化禄']）"""
         out = []
         for t, star in four_trans.items():
-            if star and star_positions.get(star) == palace:
+            if star and all_star_positions.get(star) == palace:
                 out.append(f"{star}化{t}")
         return out
 
@@ -756,8 +770,8 @@ def _perform_local_analysis(chart_data: Dict[str, Any], analysis_type: str) -> D
         basis.append(f"吠陀上升{asc_sign}")
     for _t in ("禄", "权", "科", "忌"):
         _st = four_trans.get(_t, "")
-        if _st and star_positions.get(_st):
-            basis.append(f"{_st}化{_t}入{star_positions[_st]}")
+        if _st and all_star_positions.get(_st):
+            basis.append(f"{_st}化{_t}入{all_star_positions[_st]}")
     if moon_sign:
         basis.append(f"月亮{moon_sign}")
 
