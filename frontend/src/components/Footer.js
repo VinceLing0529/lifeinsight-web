@@ -35,6 +35,12 @@ const Footer = () => {
 
                 <div className="border-t border-paper/15 mt-6 pt-4 flex flex-col md:flex-row justify-between items-center gap-1">
                     <p className="text-paper/40 text-xs">LifeInsight Team</p>
+                    <a
+                        href="mailto:support@aimingpan.com"
+                        className="text-paper/40 text-xs hover:text-paper/80 transition-colors"
+                    >
+                        客服邮箱 · support@aimingpan.com
+                    </a>
                     <p className="text-paper/40 text-xs">© 2026 生命洞察命盘分析系统</p>
                 </div>
             </div>
