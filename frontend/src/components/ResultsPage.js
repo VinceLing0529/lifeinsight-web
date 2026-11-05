@@ -2,9 +2,52 @@ import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../config';
 import { ArrowLeft, Share2, Download, Calendar, Clock, MapPin, User, Eye, EyeOff, ChevronRight, Sparkles, Copy, X } from 'lucide-react';
 import CodeRedemptionModal from './CodeRedemptionModal';
+import GlossaryTip from './GlossaryTip';
 import apiService, { aiAnalysisAPI } from '../services/api';
 import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+
+// 四柱干支：干、支逐字挂大白话词条；日柱的天干用「日主」口吻的词条
+const PillarChars = ({ pillar, day }) => {
+    if (!pillar || pillar.length < 2) return <>{pillar || '未知'}</>;
+    return (
+        <>
+            <GlossaryTip k={day ? `daymaster:${pillar[0]}` : `stem:${pillar[0]}`}>{pillar[0]}</GlossaryTip>
+            <GlossaryTip k={`branch:${pillar[1]}`}>{pillar[1]}</GlossaryTip>
+        </>
+    );
+};
+
+// 藏干列表：每字挂天干词条
+const HiddenStems = ({ list }) => {
+    if (!list || list.length === 0) return <>未知</>;
+    return (
+        <>
+            {list.map((s, i) => (
+                <span key={i}>{i > 0 ? ', ' : ''}<GlossaryTip k={`stem:${s}`}>{s}</GlossaryTip></span>
+            ))}
+        </>
+    );
+};
+
+// 藏干十神列表：藏干挂天干词条、十神挂十神词条；无详析时退回单值十神
+const HiddenGods = ({ list, fallback }) => {
+    if (list && list.length > 0) {
+        return (
+            <>
+                {list.map((item, i) => (
+                    <span key={i}>
+                        {i > 0 ? ', ' : ''}
+                        <GlossaryTip k={`stem:${item.藏干}`}>{item.藏干}</GlossaryTip>
+                        (<GlossaryTip k={`tengod:${item.十神}`}>{item.十神}</GlossaryTip>)
+                    </span>
+                ))}
+            </>
+        );
+    }
+    if (fallback) return <GlossaryTip k={`tengod:${fallback}`}>{fallback}</GlossaryTip>;
+    return <>未知</>;
+};
 
 const ResultsPage = (props) => {
     const location = useLocation();
@@ -611,6 +654,7 @@ const ResultsPage = (props) => {
     function renderBaziContent(bazi, input) {
         return (
             <div className="space-y-6">
+                <p className="text-xs text-ink-faint">小提示：带<span className="border-b border-dotted border-primary-500/60 text-ink-soft">虚线下划线</span>的词，把鼠标放上去（手机点一下）就有大白话解释。</p>
                 {/* 真太阳时信息 */}
                 {input.true_solar_time && (
                     <div className="bg-accent-50 border border-accent-200 rounded p-4">
@@ -653,54 +697,54 @@ const ResultsPage = (props) => {
                             <tbody>
                                 <tr>
                                     <td className="border border-line px-4 py-3 font-medium text-ink-soft">年柱</td>
-                                    <td className="border border-line px-4 py-3 text-primary-600 font-serif font-bold">{bazi.year_pillar || '未知'}</td>
+                                    <td className="border border-line px-4 py-3 text-primary-600 font-serif font-bold"><PillarChars pillar={bazi.year_pillar} /></td>
                                     <td className="border border-line px-4 py-3 text-secondary-600">
                                         {bazi.enhanced_analysis?.四柱详析?.[0]?.纳音 || bazi.nayin?.年柱 || '未知'}
                                     </td>
                                     <td className="border border-line px-4 py-3 text-ink-soft">
-                                        {bazi.enhanced_analysis?.四柱详析?.[0]?.藏干?.join(', ') || '未知'}
+                                        <HiddenStems list={bazi.enhanced_analysis?.四柱详析?.[0]?.藏干} />
                                     </td>
                                     <td className="border border-line px-4 py-3 text-accent-700">
-                                        {bazi.enhanced_analysis?.四柱详析?.[0]?.藏干十神?.map(item => `${item.藏干}(${item.十神})`).join(', ') || bazi.ten_gods?.年干 || '未知'}
+                                        <HiddenGods list={bazi.enhanced_analysis?.四柱详析?.[0]?.藏干十神} fallback={bazi.ten_gods?.年干} />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td className="border border-line px-4 py-3 font-medium text-ink-soft">月柱</td>
-                                    <td className="border border-line px-4 py-3 text-primary-600 font-serif font-bold">{bazi.month_pillar || '未知'}</td>
+                                    <td className="border border-line px-4 py-3 text-primary-600 font-serif font-bold"><PillarChars pillar={bazi.month_pillar} /></td>
                                     <td className="border border-line px-4 py-3 text-secondary-600">
                                         {bazi.enhanced_analysis?.四柱详析?.[1]?.纳音 || bazi.nayin?.月柱 || '未知'}
                                     </td>
                                     <td className="border border-line px-4 py-3 text-ink-soft">
-                                        {bazi.enhanced_analysis?.四柱详析?.[1]?.藏干?.join(', ') || '未知'}
+                                        <HiddenStems list={bazi.enhanced_analysis?.四柱详析?.[1]?.藏干} />
                                     </td>
                                     <td className="border border-line px-4 py-3 text-accent-700">
-                                        {bazi.enhanced_analysis?.四柱详析?.[1]?.藏干十神?.map(item => `${item.藏干}(${item.十神})`).join(', ') || bazi.ten_gods?.月干 || '未知'}
+                                        <HiddenGods list={bazi.enhanced_analysis?.四柱详析?.[1]?.藏干十神} fallback={bazi.ten_gods?.月干} />
                                     </td>
                                 </tr>
                                 <tr className="bg-accent-50">
                                     <td className="border border-line px-4 py-3 font-medium text-ink-soft">日柱 (日主)</td>
-                                    <td className="border border-line px-4 py-3 text-primary-700 font-serif font-black text-lg">{bazi.day_pillar || '未知'}</td>
+                                    <td className="border border-line px-4 py-3 text-primary-700 font-serif font-black text-lg"><PillarChars pillar={bazi.day_pillar} day /></td>
                                     <td className="border border-line px-4 py-3 text-secondary-600">
                                         {bazi.enhanced_analysis?.四柱详析?.[2]?.纳音 || bazi.nayin?.日柱 || '未知'}
                                     </td>
                                     <td className="border border-line px-4 py-3 text-ink-soft">
-                                        {bazi.enhanced_analysis?.四柱详析?.[2]?.藏干?.join(', ') || '未知'}
+                                        <HiddenStems list={bazi.enhanced_analysis?.四柱详析?.[2]?.藏干} />
                                     </td>
                                     <td className="border border-line px-4 py-3 text-accent-700">
-                                        {bazi.enhanced_analysis?.四柱详析?.[2]?.藏干十神?.map(item => `${item.藏干}(${item.十神})`).join(', ') || bazi.ten_gods?.日干 || '未知'}
+                                        <HiddenGods list={bazi.enhanced_analysis?.四柱详析?.[2]?.藏干十神} fallback={bazi.ten_gods?.日干} />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td className="border border-line px-4 py-3 font-medium text-ink-soft">时柱</td>
-                                    <td className="border border-line px-4 py-3 text-primary-600 font-serif font-bold">{bazi.hour_pillar || '未知'}</td>
+                                    <td className="border border-line px-4 py-3 text-primary-600 font-serif font-bold"><PillarChars pillar={bazi.hour_pillar} /></td>
                                     <td className="border border-line px-4 py-3 text-secondary-600">
                                         {bazi.enhanced_analysis?.四柱详析?.[3]?.纳音 || bazi.nayin?.时柱 || '未知'}
                                     </td>
                                     <td className="border border-line px-4 py-3 text-ink-soft">
-                                        {bazi.enhanced_analysis?.四柱详析?.[3]?.藏干?.join(', ') || '未知'}
+                                        <HiddenStems list={bazi.enhanced_analysis?.四柱详析?.[3]?.藏干} />
                                     </td>
                                     <td className="border border-line px-4 py-3 text-accent-700">
-                                        {bazi.enhanced_analysis?.四柱详析?.[3]?.藏干十神?.map(item => `${item.藏干}(${item.十神})`).join(', ') || bazi.ten_gods?.时干 || '未知'}
+                                        <HiddenGods list={bazi.enhanced_analysis?.四柱详析?.[3]?.藏干十神} fallback={bazi.ten_gods?.时干} />
                                     </td>
                                 </tr>
                             </tbody>
@@ -715,7 +759,7 @@ const ResultsPage = (props) => {
                         <div className="space-y-3">
                             {Object.entries(bazi.five_elements).map(([element, count]) => (
                                 <div key={element} className="flex items-center justify-between">
-                                    <span className="text-ink-soft">{element}</span>
+                                    <span className="text-ink-soft"><GlossaryTip k={`element:${element}`}>{element}</GlossaryTip></span>
                                     <div className="flex items-center space-x-3 flex-1 max-w-xs">
                                         <div className="flex-1 bg-paper-deep rounded-full h-2">
                                             <div
@@ -738,7 +782,7 @@ const ResultsPage = (props) => {
                         <div className="space-y-3">
                             <div className="p-4 bg-primary-50 border border-primary-100 rounded">
                                 <p className="text-sm text-primary-600 mb-1">日主</p>
-                                <p className="font-bold text-ink font-serif text-lg">{bazi.day_master || '未知'}</p>
+                                <p className="font-bold text-ink font-serif text-lg">{bazi.day_master ? <GlossaryTip k={`daymaster:${bazi.day_master}`}>{bazi.day_master}</GlossaryTip> : '未知'}</p>
                             </div>
                             <div className="p-4 bg-secondary-50 border border-secondary-100 rounded">
                                 <p className="text-sm text-secondary-600 mb-1">身强身弱</p>
@@ -754,7 +798,7 @@ const ResultsPage = (props) => {
                             {bazi.ten_gods && Object.entries(bazi.ten_gods).map(([position, god]) => (
                                 <div key={position} className="flex justify-between p-3 bg-paper-card border border-line rounded">
                                     <span className="text-ink-faint">{position}：</span>
-                                    <span className="font-medium text-ink">{god}</span>
+                                    <span className="font-medium text-ink"><GlossaryTip k={`tengod:${god}`}>{god}</GlossaryTip></span>
                                 </div>
                             ))}
                         </div>
@@ -770,6 +814,7 @@ const ResultsPage = (props) => {
     function renderZiweiContent(ziwei) {
         return (
             <div className="space-y-6">
+                <p className="text-xs text-ink-faint">小提示：带<span className="border-b border-dotted border-primary-500/60 text-ink-soft">虚线下划线</span>的词，把鼠标放上去（手机点一下）就有大白话解释。</p>
                 {/* 基本信息 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -777,11 +822,11 @@ const ResultsPage = (props) => {
                         <div className="space-y-3">
                             <div className="flex justify-between p-3 bg-paper-card border border-line rounded">
                                 <span className="text-ink-faint">命宫主星：</span>
-                                <span className="font-medium text-ink">{ziwei.basic_info?.soul || '未知'}</span>
+                                <span className="font-medium text-ink">{ziwei.basic_info?.soul ? <GlossaryTip k={`star:${ziwei.basic_info.soul}`}>{ziwei.basic_info.soul}</GlossaryTip> : '未知'}</span>
                             </div>
                             <div className="flex justify-between p-3 bg-paper-card border border-line rounded">
                                 <span className="text-ink-faint">身宫主星：</span>
-                                <span className="font-medium text-ink">{ziwei.basic_info?.body || '未知'}</span>
+                                <span className="font-medium text-ink">{ziwei.basic_info?.body ? <GlossaryTip k={`star:${ziwei.basic_info.body}`}>{ziwei.basic_info.body}</GlossaryTip> : '未知'}</span>
                             </div>
                             <div className="flex justify-between p-3 bg-paper-card border border-line rounded">
                                 <span className="text-ink-faint">五行局：</span>
@@ -803,8 +848,8 @@ const ResultsPage = (props) => {
                         <div className="space-y-3">
                             {ziwei.year_four_trans && Object.entries(ziwei.year_four_trans).map(([type, star]) => (
                                 <div key={type} className="flex justify-between p-3 bg-secondary-50 border border-secondary-100 rounded">
-                                    <span className="text-secondary-700 font-medium">{type}：</span>
-                                    <span className="font-medium text-ink">{star}</span>
+                                    <span className="text-secondary-700 font-medium"><GlossaryTip k={`sihua:${type}`}>{type}</GlossaryTip>：</span>
+                                    <span className="font-medium text-ink"><GlossaryTip k={`star:${star}`}>{star}</GlossaryTip></span>
                                 </div>
                             ))}
                         </div>
@@ -817,8 +862,8 @@ const ResultsPage = (props) => {
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {ziwei.chart?.star_positions && Object.entries(ziwei.chart.star_positions).map(([star, palace]) => (
                             <div key={star} className="flex justify-between p-3 bg-secondary-50 border border-secondary-100 rounded">
-                                <span className="text-secondary-700 font-medium">{star}</span>
-                                <span className="text-ink">{palace}</span>
+                                <span className="text-secondary-700 font-medium"><GlossaryTip k={`star:${star}`}>{star}</GlossaryTip></span>
+                                <span className="text-ink"><GlossaryTip k={`palace:${palace}`}>{palace}</GlossaryTip></span>
                             </div>
                         ))}
                     </div>
@@ -831,7 +876,7 @@ const ResultsPage = (props) => {
                         {ziwei.chart?.palaces && Object.entries(ziwei.chart.palaces).map(([palaceName, palace]) => (
                             <div key={palaceName} className="bg-paper-card border border-line rounded p-4">
                                 <div className="flex items-center justify-between mb-3">
-                                    <h5 className="font-semibold text-ink font-serif">{palaceName}</h5>
+                                    <h5 className="font-semibold text-ink font-serif"><GlossaryTip k={`palace:${palaceName}`}>{palaceName}</GlossaryTip></h5>
                                     {palace.is_body_palace && (
                                         <span className="px-2 py-0.5 bg-primary-600 text-paper-card text-xs rounded-sm tracking-widest">身宫</span>
                                     )}
@@ -839,7 +884,7 @@ const ResultsPage = (props) => {
                                 <div className="space-y-2 text-sm">
                                     <div>
                                         <span className="text-ink-faint">宫位：</span>
-                                        <span className="font-medium text-ink">{palace.heavenly_stem}{palace.earthly_branch}</span>
+                                        <span className="font-medium text-ink"><GlossaryTip k={`stem:${palace.heavenly_stem}`}>{palace.heavenly_stem}</GlossaryTip><GlossaryTip k={`branch:${palace.earthly_branch}`}>{palace.earthly_branch}</GlossaryTip></span>
                                     </div>
                                     {palace.major_stars && palace.major_stars.length > 0 && (
                                         <div>
@@ -847,9 +892,9 @@ const ResultsPage = (props) => {
                                             <div className="mt-1">
                                                 {palace.major_stars.map((star, idx) => (
                                                     <span key={idx} className="inline-block mr-2 mb-1 px-2 py-1 bg-secondary-50 border border-secondary-100 text-secondary-700 text-xs rounded-sm">
-                                                        {star.name}
+                                                        <GlossaryTip k={`star:${star.name}`}>{star.name}</GlossaryTip>
                                                         {star.brightness && `(${star.brightness})`}
-                                                        {star.mutagen && `[${star.mutagen}]`}
+                                                        {star.mutagen && <>[<GlossaryTip k={`sihua:${star.mutagen}`}>{star.mutagen}</GlossaryTip>]</>}
                                                     </span>
                                                 ))}
                                             </div>
@@ -861,7 +906,7 @@ const ResultsPage = (props) => {
                                             <div className="mt-1">
                                                 {palace.minor_stars.map((star, idx) => (
                                                     <span key={idx} className="inline-block mr-1 mb-1 px-2 py-1 bg-paper-deep border border-line text-ink-soft text-xs rounded-sm">
-                                                        {star}
+                                                        <GlossaryTip k={`star:${star}`}>{star}</GlossaryTip>
                                                     </span>
                                                 ))}
                                             </div>
@@ -892,6 +937,7 @@ const ResultsPage = (props) => {
     function renderVedicContent(vedic) {
         return (
             <div className="space-y-6">
+                <p className="text-xs text-ink-faint">小提示：带<span className="border-b border-dotted border-primary-500/60 text-ink-soft">虚线下划线</span>的词，把鼠标放上去（手机点一下）就有大白话解释。</p>
                 {/* 基本信息 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -907,7 +953,7 @@ const ResultsPage = (props) => {
                             </div>
                             <div className="flex justify-between p-3 bg-paper-card border border-line rounded">
                                 <span className="text-ink-faint">上升星座：</span>
-                                <span className="font-medium text-ink">{vedic.ascendant?.sign || '未知'} (第{vedic.ascendant?.house}宫 {vedic.ascendant?.lon?.toFixed(2)}°)</span>
+                                <span className="font-medium text-ink">{vedic.ascendant?.sign ? <GlossaryTip k={`sign:${vedic.ascendant.sign}`}>{vedic.ascendant.sign}</GlossaryTip> : '未知'} (第{vedic.ascendant?.house}宫 {vedic.ascendant?.lon?.toFixed(2)}°)</span>
                             </div>
                             <div className="flex justify-between p-3 bg-paper-card border border-line rounded">
                                 <span className="text-ink-faint">计算时间：</span>
@@ -927,7 +973,7 @@ const ResultsPage = (props) => {
                                 <div key={point} className="flex justify-between p-3 bg-accent-50 border border-accent-200 rounded">
                                     <span className="text-accent-700 font-medium">{point}：</span>
                                     <span className="font-medium text-ink">
-                                        {data.sign} (第{data.house}宫 {data.lon?.toFixed(2)}°)
+                                        <GlossaryTip k={`sign:${data.sign}`}>{data.sign}</GlossaryTip> (第{data.house}宫 {data.lon?.toFixed(2)}°)
                                     </span>
                                 </div>
                             ))}
@@ -947,13 +993,13 @@ const ResultsPage = (props) => {
                             return (
                                 <div key={planet} className="bg-accent-50/60 border border-accent-200 rounded p-4">
                                     <div className="flex items-center justify-between mb-2">
-                                        <h5 className="font-semibold text-ink font-serif">{planetName}</h5>
+                                        <h5 className="font-semibold text-ink font-serif"><GlossaryTip k={`planet:${planetName}`}>{planetName}</GlossaryTip></h5>
                                         <span className="text-sm text-accent-700">第{data.house}宫</span>
                                     </div>
                                     <div className="space-y-1 text-sm">
                                         <div className="flex justify-between">
                                             <span className="text-ink-faint">星座：</span>
-                                            <span className="font-medium text-ink">{data.sign}</span>
+                                            <span className="font-medium text-ink"><GlossaryTip k={`sign:${data.sign}`}>{data.sign}</GlossaryTip></span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-ink-faint">度数：</span>
@@ -990,7 +1036,7 @@ const ResultsPage = (props) => {
                                     <div className="space-y-1">
                                         {houseStats[houseNum] ? houseStats[houseNum].map((planetName, idx) => (
                                             <span key={idx} className="inline-block mr-1 mb-1 px-2 py-1 bg-accent-50 border border-accent-200 text-accent-800 text-xs rounded-sm">
-                                                {planetName}
+                                                <GlossaryTip k={`planet:${planetName}`}>{planetName}</GlossaryTip>
                                             </span>
                                         )) : (
                                             <span className="text-ink-faint text-xs">空宫</span>
@@ -1022,11 +1068,11 @@ const ResultsPage = (props) => {
 
                             return Object.entries(signStats).map(([sign, planets]) => (
                                 <div key={sign} className="bg-paper-card border border-line rounded p-3">
-                                    <div className="font-semibold text-ink font-serif mb-2">{sign}</div>
+                                    <div className="font-semibold text-ink font-serif mb-2"><GlossaryTip k={`sign:${sign}`}>{sign}</GlossaryTip></div>
                                     <div className="space-y-1">
                                         {planets.map((planetName, idx) => (
                                             <span key={idx} className="inline-block mr-1 mb-1 px-2 py-1 bg-paper-deep border border-line text-ink-soft text-xs rounded-sm">
-                                                {planetName}
+                                                <GlossaryTip k={`planet:${planetName}`}>{planetName}</GlossaryTip>
                                             </span>
                                         ))}
                                     </div>
