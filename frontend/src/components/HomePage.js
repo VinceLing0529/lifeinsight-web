@@ -77,8 +77,13 @@ const HomePage = () => {
                             <span className="text-[11px] tracking-[0.5em] text-ink-faint">八字 · 紫微 · 吠陀</span>
                             <span className="h-px w-16 bg-accent-400" />
                         </div>
-                        <p className="text-ink-soft text-sm lg:text-base">三盘合参，互为印证——输入出生信息，排出属于你的那一张盘</p>
-                        <p className="text-ink-faint text-xs lg:text-sm mt-3">排盘与快速解读免费 · 深度报告 ¥99（含运势预测与 30 问答疑）</p>
+                        <div className="space-y-1.5 mb-4">
+                            <p className="text-base lg:text-lg text-ink font-serif">今年这一步，到底该不该迈？</p>
+                            <p className="text-base lg:text-lg text-ink font-serif">为什么钱总是留不住？</p>
+                            <p className="text-base lg:text-lg text-ink font-serif">这段关系，还有没有继续的必要？</p>
+                        </div>
+                        <p className="text-ink-soft text-sm lg:text-base max-w-xl mx-auto leading-relaxed">命盘不替你做决定。它把你的长处、盲区，还有这几年的节奏，用八字、紫微、印度星盘三盘互证，一条条摆给你看。</p>
+                        <p className="text-ink-faint text-xs lg:text-sm mt-3">排盘与快速解读免费 · 深度报告 ¥99（含未来十二个月运势与 30 问答疑）</p>
                         <p className="text-ink-faint text-xs mt-2 tracking-wide">填生辰 → 看三盘 → 读解读 · 不用注册</p>
                     </div>
 
@@ -88,11 +93,16 @@ const HomePage = () => {
                             onError={handleError}
                             onLoadingChange={setLoading}
                         />
-                        <p className="text-center mt-4">
-                            <button onClick={() => navigate('/final-report/LIFEDEMO1995')} className="text-sm text-primary-700 underline underline-offset-4 decoration-accent-300 hover:text-primary-800">
-                                还不想填？先看一份完整的示例报告 →
-                            </button>
-                        </p>
+                        <div className="mt-6 bg-secondary-50 border border-secondary-200 rounded p-4 text-left">
+                            <p className="text-[11px] tracking-[0.3em] text-secondary-700 mb-2">大白话说 · 示例报告摘录</p>
+                            <p className="text-sm text-ink leading-relaxed">「钱先落袋再谈感情，觉睡够再谈拼命。」</p>
+                            <p className="text-sm text-ink-soft leading-relaxed mt-1.5">「年轻时辛苦点是正常的，你的发力期在后面，三十多岁以后会越走越顺。」</p>
+                            <p className="mt-3">
+                                <button onClick={() => navigate('/final-report/LIFEDEMO1995')} className="text-sm text-primary-700 underline underline-offset-4 decoration-accent-300 hover:text-primary-800">
+                                    先看一份完整的示例报告 →
+                                </button>
+                            </p>
+                        </div>
                     </>
                 </div>
             )}
