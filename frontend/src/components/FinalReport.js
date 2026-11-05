@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../config';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Clock, CheckCircle, ArrowLeft, Camera } from 'lucide-react';
 
 export default function FinalReport() {
     const { orderId } = useParams();
@@ -11,6 +11,9 @@ export default function FinalReport() {
     const [moduleStatus, setModuleStatus] = useState({});
     const [generatingModule, setGeneratingModule] = useState(null);
     const [reportData, setReportData] = useState(null);
+    const [snapshotUrl, setSnapshotUrl] = useState(null);
+    const [snapshotLoading, setSnapshotLoading] = useState(false);
+    const [snapshotError, setSnapshotError] = useState(null);
     // 注意：后端模块进度只有 0 / 100 两个真实值（见 /api/ai-report/module-status，
     // 服务端一次调用 AI 并返回结果，等待期间没有中间进度）。此前前端曾用
     // 每秒 +10% 的定时器伪造 0→90% 的进度条，2026-11-01 包6 已删除：
@@ -114,6 +117,32 @@ export default function FinalReport() {
 
     const handleBack = () => {
         navigate('/');
+    };
+
+    // 命盘快照：向后端取一张渲染好的 PNG（内容来自本报告的大白话），弹窗预览 + 保存
+    const handleSnapshot = async () => {
+        if (snapshotLoading) return;
+        setSnapshotLoading(true);
+        setSnapshotError(null);
+        try {
+            const resp = await fetch(`${API_BASE}/api/ai-report/snapshot/${orderId}`);
+            if (!resp.ok) {
+                let msg = '快照生成失败，请稍后再试';
+                try { const j = await resp.json(); if (j && j.detail) msg = j.detail; } catch (e) { /* 非 JSON 错误体 */ }
+                throw new Error(msg);
+            }
+            const blob = await resp.blob();
+            setSnapshotUrl(URL.createObjectURL(blob));
+        } catch (err) {
+            setSnapshotError(err.message);
+        } finally {
+            setSnapshotLoading(false);
+        }
+    };
+
+    const closeSnapshot = () => {
+        if (snapshotUrl) URL.revokeObjectURL(snapshotUrl);
+        setSnapshotUrl(null);
     };
 
     const handleCardClick = (section) => {
@@ -287,6 +316,22 @@ export default function FinalReport() {
                         </p>
                     </div>
 
+                    {/* 命盘快照：优劣分析完成后，可把大白话内容生成一张卡片保存/分享 */}
+                    {(moduleStatus.analysis || 0) >= 100 && (
+                        <div className="text-center mb-8">
+                            <button
+                                onClick={handleSnapshot}
+                                disabled={snapshotLoading}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-secondary-600 text-paper-card rounded-lg hover:bg-secondary-700 transition-colors font-medium disabled:opacity-60"
+                            >
+                                <Camera className="w-5 h-5" />
+                                {snapshotLoading ? '正在生成快照…' : '生成命盘快照'}
+                            </button>
+                            <p className="text-ink-faint text-sm mt-2">把报告里的大白话做成一张卡片，方便保存和分享</p>
+                            {snapshotError && <p className="text-primary-700 text-sm mt-2">{snapshotError}</p>}
+                        </div>
+                    )}
+
                     {/* Report Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         {reportSections.map((section) => {
@@ -381,6 +426,31 @@ export default function FinalReport() {
                     </div>
                 </div>
             </div>
+
+            {/* 命盘快照预览弹窗 */}
+            {snapshotUrl && (
+                <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={closeSnapshot}>
+                    <div className="bg-paper-card rounded-2xl p-4 max-w-md w-full max-h-full overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <img src={snapshotUrl} alt="命盘快照" className="w-full rounded-lg border border-line" />
+                        <div className="flex gap-3 mt-4">
+                            <a
+                                href={snapshotUrl}
+                                download={`命盘快照-${orderId}.png`}
+                                className="flex-1 text-center px-4 py-2 bg-primary-600 text-paper-card rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                            >
+                                保存图片
+                            </a>
+                            <button
+                                onClick={closeSnapshot}
+                                className="flex-1 px-4 py-2 bg-paper-card border border-line text-ink-soft rounded-lg hover:border-accent-300 transition-colors"
+                            >
+                                关闭
+                            </button>
+                        </div>
+                        <p className="text-ink-faint text-xs text-center mt-3">手机上也可以长按图片直接保存</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 } 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from core.ratelimit import rate_limit
 from pydantic import BaseModel
 from typing import Dict, Any, List
@@ -1361,6 +1361,49 @@ async def get_module_data(order_id: str, module: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取模块数据失败: {str(e)}")
+
+@router.get("/snapshot/{order_id}")
+async def get_snapshot_card(order_id: str):
+    """命盘快照：把 analysis 的大白话内容渲染成一张可保存分享的 PNG 卡片（不调用 AI）。"""
+    order_dir = REPORTS_DIR / order_id
+    if not order_dir.exists():
+        raise HTTPException(status_code=404, detail="订单不存在")
+    result_file = order_dir / "analysis_result.json"
+    if not result_file.exists():
+        raise HTTPException(status_code=404, detail="优劣分析尚未生成，暂时无法生成快照")
+
+    with open(result_file, 'r', encoding='utf-8') as f:
+        result_data = json.load(f)
+    content = result_data.get("content")
+    if isinstance(content, str):
+        s = content.strip()
+        s = re.sub(r"^```json\s*", "", s, flags=re.I)
+        s = re.sub(r"^```\s*", "", s)
+        s = re.sub(r"\s*```$", "", s)
+        try:
+            content = json.loads(s)
+        except Exception:
+            raise HTTPException(status_code=500, detail="报告内容解析失败")
+    if not isinstance(content, dict):
+        raise HTTPException(status_code=500, detail="报告内容解析失败")
+
+    # 延迟导入：缺 Pillow/字体时只影响本接口，不拖垮整个 API
+    from .snapshot_card import render_snapshot_png, SnapshotFontError
+    try:
+        png = render_snapshot_png(content)
+    except SnapshotFontError:
+        raise HTTPException(status_code=503, detail="服务器字体未就绪，快照功能暂时不可用")
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    return Response(
+        content=png,
+        media_type="image/png",
+        headers={
+            "Content-Disposition": f'inline; filename="snapshot-{order_id}.png"',
+            "Cache-Control": "private, max-age=300",
+        },
+    )
 
 @router.post("/simulate-progress/{order_id}/{module}")
 async def simulate_progress(order_id: str, module: str):

@@ -21,7 +21,7 @@ fi
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
 apt-get install -y python3 python3-venv python3-dev build-essential git curl ufw \
-  debian-keyring debian-archive-keyring apt-transport-https gpg
+  debian-keyring debian-archive-keyring apt-transport-https gpg fonts-noto-cjk
 
 # ---- Node 20 ----
 if ! command -v node >/dev/null 2>&1; then
