@@ -686,7 +686,7 @@ def _perform_local_analysis(chart_data: Dict[str, Any], analysis_type: str) -> D
         parts = []
         for t in ("禄", "忌"):
             star = trans[t]
-            dest = star_positions.get(star, "")
+            dest = all_star_positions.get(star, "")
             if dest:
                 parts.append(f"飞{star}化{t}入{dest}")
         if not parts:
@@ -893,7 +893,7 @@ def _perform_local_analysis(chart_data: Dict[str, Any], analysis_type: str) -> D
         lu = _trans_line("禄")
         if lu:
             extra.append("紫微" + lu)
-        lucun_palace = star_positions.get("禄存", "")
+        lucun_palace = all_star_positions.get("禄存", "")
         if lucun_palace:
             extra.append(f"禄存坐{lucun_palace}（{_PALACE_DOMAIN.get(lucun_palace, lucun_palace)}）：这一领域自带一份稳定财禄")
         hl = _house_line(2)
